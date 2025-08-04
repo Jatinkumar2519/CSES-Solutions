@@ -1,0 +1,34 @@
+# include<bits/stdc++.h>
+using namespace std;
+# define ll long long
+const int MOD = 1e9 + 7;
+vector<vector<ll>> multiply(vector<vector<ll>>& a,vector<vector<ll>>& b){
+    vector<vector<ll>> prod(2,vector<ll>(2));
+    for(int i = 0;i < 2;i++){
+        for(int j = 0;j < 2;j++){
+            for(int k = 0;k < 2;k++){
+                prod[i][j] = (prod[i][j] + a[i][k] * b[k][j]) % MOD;
+            }
+        }
+    }
+    return prod;
+}
+vector<vector<ll>> power(vector<vector<ll>>& a,long long x){
+    vector<vector<ll>> res = {{1,0},{0,1}};
+    while(x > 0){
+        if(x & 1){
+            res = multiply(res, a);
+        }
+        a = multiply(a,a);
+        x >>= 1;
+    }
+    return res;
+}
+int numberOfWaysToTile(long long n)
+{
+    //  Write your code here.
+    if(n == 1 || n == 0) return 1;
+    vector<vector<ll>> res = {{1,1},{1,0}};
+    res = power(res,n);
+    return res[0][0];
+}
