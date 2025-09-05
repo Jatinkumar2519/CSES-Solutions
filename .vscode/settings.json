@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "iostream": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "new": "cpp",
+        "tuple": "cpp",
+        "ostream": "cpp",
+        "forward_list": "cpp"
+    }
+}
