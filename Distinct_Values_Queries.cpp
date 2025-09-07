@@ -16,6 +16,22 @@ struct SegmentTree
         tree.resize(4 * n);
         BuildTree(arr,0,0,n - 1);
     }
+    pair<int,set<int>> merge(set<int>& set1,set<int>& set2){
+        set<int> set;
+        if(set1.size() > set2.size()){
+            set = set1;
+            for(int num : set2){
+                set.insert(num);
+            }
+        }
+        else{
+            set = set2;
+            for(int num : set1){
+                set.insert(num);
+            }
+        }
+        return {set.size(),set};
+    }
     void BuildTree(vi& arr,int node,int l,int r){
         if(l == r){
             set<int> set;
@@ -28,30 +44,17 @@ struct SegmentTree
         int right = (node << 1) + 2;
         BuildTree(arr,left,l,mid);
         BuildTree(arr,right,mid + 1,r);
-        auto set1 = tree[left].second;
-        auto set2 = tree[right].second;
-        if(set1.size() > set2.size()){
-            for(int num : set2){
-                set1.insert(num);
-            }
-            tree[node] = {set1.size(),set1};
-        }
-        else{
-            for(int num : set1){
-                set2.insert(num);
-            }
-            tree[node] = {set2.size(),set2};
-        }
+        tree[node] = merge(tree[left].second,tree[right].second);
     }
-    int query(int node,int ql,int qr,int l,int r){
-        if(qr < l || r < ql) return 0;
+    pair<int,set<int>> query(int node,int ql,int qr,int l,int r){
+        if(qr < l || r < ql) return {0,set<int>()};
         if(ql <= l && r <= qr){
-            return tree[node].first;
+            return tree[node];
         }
         int mid = (l + r) >> 1;
-        int left = (node << 1) + 1;
-        int right = (node << 1) + 2;
-        return query(left,ql,qr,l,mid) + query(right,ql,qr,mid + 1,r);
+        auto left = query((node << 1) + 1,ql,qr,l,mid);
+        auto right = query((node << 1) + 2,ql,qr,mid + 1,r);
+        return merge(left.second,right.second);
     }
 };
 int main()
@@ -70,7 +73,7 @@ int main()
         int a,b;
         cin >> a >> b;
         a--;b--;
-        cout<< code.query(0,a,b,0,n - 1) << endl;
+        cout<< code.query(0,a,b,0,n - 1).first << endl;
     }
     return 0;
 }
