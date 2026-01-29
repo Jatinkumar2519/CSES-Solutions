@@ -2,6 +2,7 @@
 #define ll long long
 using namespace std;
 
+const int MOD = 1e9 + 7;
 int main() {
     ios::sync_with_stdio(false); cin.tie(0);
     int n,m;
@@ -37,38 +38,14 @@ int main() {
         }
     }
 
-    vector<int> dist(n + 1,INT_MIN);
-    dist[1] = 0;
-
-    vector<int> parent(n + 1,-1);
+    vector<ll> dist(n + 1,0);
+    dist[1] = 1LL;
     
     for(int node : topo){
         for(int nn : graph[node]){
-            if(dist[node] != INT_MIN && dist[node] + 1 > dist[nn]){
-                parent[nn] = node;
-                dist[nn] = dist[node] + 1;
-            }
+            dist[nn] = (dist[nn] + dist[node]) % MOD;
         }
     }
-
-    if(dist[n] == INT_MIN){
-        cout<< "IMPOSSIBLE";
-        return 0;
-    }
-
-    cout<< dist[n] + 1 << endl;
-
-    vector<int> path;
-    int start = n;
-
-    while(start != -1){
-        path.push_back(start);
-        start = parent[start];
-    }
-
-    reverse(path.begin(),path.end());
-    for(int node : path){
-        cout<< node << " ";
-    }
+    cout<< dist[n] << endl;
     return 0;
 }

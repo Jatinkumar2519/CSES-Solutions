@@ -9,19 +9,26 @@ int main() {
     for(int i = 0;i < n;i++){
         cin >> arr[i];
     }
-    ll sum = 0;
+
+    ll sum = 0,maxv = LLONG_MIN;
     int left = 0;
-    ll maxsum = LLONG_MIN;
     for(int i = 0;i < n;i++){
-        sum += arr[i];
-        while(r < (i - left + 1)){
-            sum -= arr[left];
-            left++;
+        if(arr[i] > arr[i] + sum){
+            left = i;
+            sum = arr[i];
         }
-        if(l <= (i - left + 1) && (i - left + 1) <= r){
-            maxsum = max(maxsum,sum);
+        else{
+            sum += arr[i];
+        }
+
+        if(i - left + 1 > r){
+            sum -= arr[left++];
+        }
+        
+        if(i - left + 1 >= l){
+            maxv = max(maxv,sum);
         }
     }
-    cout<< maxsum;
+    cout<< maxv;
     return 0;
 }

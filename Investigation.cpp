@@ -1,44 +1,99 @@
 #include <bits/stdc++.h>
 #define ll long long
 using namespace std;
+
+const ll INF = LLONG_MAX / 4;
 const int MOD = 1e9 + 7;
 
 int main() {
-    ios::sync_with_stdio(false); cin.tie(0);
-    int n,m;
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
     cin >> n >> m;
+
     vector<vector<pair<int,ll>>> graph(n + 1);
-    for(int i = 0;i < m;i++){
-        int u,v;
-        ll d;
-        cin >> u >> v >> d;
-        graph[u].emplace_back(v,d);
+    for (int i = 0; i < m; i++) {
+        int u, v;
+        ll w;
+        cin >> u >> v >> w;
+        graph[u].push_back({v, w});
     }
-    vector<ll> result(4,-1);
-    function<void()> minCost = [&]() -> void{
-        vector<ll> dist(n + 1,LLONG_MAX),routes(n + 1,0);
-        dist[0] = 0;
-        priority_queue<tuple<ll,int,ll>,vector<tuple<ll,int,ll>>,greater<tuple<ll,int,ll>>> pq;
-        pq.push({0,1,0});
-        while(!pq.empty()){
-            auto [cost,node,count] = pq.top();pq.pop();
-            if(dist[node] < cost) continue;
-            if(node == n){
-                result[2] = (result[2] == -1) ? count : min(result[2],count);
-                result[3] = (result[3] == -1) ? count : max(result[3],count);
+
+    // ---------- Dijkstra ----------
+    vector<ll> dp(n + 1, INF), routes(n + 1, 0);
+    priority_queue<pair<ll,int>, vector<pair<ll,int>>, greater<>> pq;
+
+    dp[1] = 0;
+    routes[1] = 1;
+    pq.push({0, 1});
+
+    while (!pq.empty()) {
+        auto [cost, u] = pq.top(); pq.pop();
+        if (cost > dp[u]) continue;
+
+        for (auto [v, w] : graph[u]) {
+            if (dp[v] > cost + w) {
+                dp[v] = cost + w;
+                routes[v] = routes[u];
+                pq.push({dp[v], v});
             }
-            if(dist[node] == cost) routes[node] = (routes[node] + 1) % MOD;
-            for(auto& [nn,cst] : graph[node]){
-                if(dist[nn] > cost + cst){
-                    dist[nn] = cost + cst;
-                    pq.push({dist[nn],nn,count + 1});
-                }
+            else if (dp[v] == cost + w) {
+                routes[v] = (routes[v] + routes[u]) % MOD;
             }
         }
-        result[0] = dist[n];
-        result[1] = routes[n];
-    };
-    minCost();
-    for(int i : result) cout<<i<<' ';
+    }
+
+    // ---------- Build shortest-path DAG ----------
+    vector<vector<int>> dag(n + 1);
+    vector<int> indeg(n + 1, 0);
+
+    for (int u = 1; u <= n; u++) {
+        for (auto [v, w] : graph[u]) {
+            if (dp[u] + w == dp[v]) {
+                dag[u].push_back(v);
+                indeg[v]++;
+            }
+        }
+    }
+
+    // ---------- Topo order (reachable from 1 only) ----------
+    queue<int> q;
+    vector<int> topo;
+
+    q.push(1);
+
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        topo.push_back(u);
+        for (int v : dag[u]) {
+            if (--indeg[v] == 0)
+                q.push(v);
+        }
+    }
+
+    // ---------- Min edges ----------
+    vector<ll> mn(n + 1, INF);
+    mn[1] = 0;
+
+    for (int u : topo) {
+        for (int v : dag[u]) {
+            if (mn[u] != INF)
+                mn[v] = min(mn[v], mn[u] + 1);
+        }
+    }
+
+    // ---------- Max edges ----------
+    vector<ll> mx(n + 1, -INF);
+    mx[1] = 0;
+
+    for (int u : topo) {
+        for (int v : dag[u]) {
+            if (mx[u] != -INF)
+                mx[v] = max(mx[v], mx[u] + 1);
+        }
+    }
+
+    cout << dp[n] << " " << routes[n] << " " << mn[n] << " " << mx[n];
     return 0;
 }

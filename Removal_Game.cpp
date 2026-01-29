@@ -7,12 +7,13 @@
 #define vvl vector<vector<long long>>
 using namespace std;
 const int MOD = 1e9 + 7;
-map<int,map<int,map<int,ll>>> dp;
+
+ll dp[5001][5001][2];
 ll solve(vector<ll>& arr,int i,int j,int turn){
     if(i == j) {
-        return (turn == 0)? arr[i] : 0; 
+        return (turn == 0) ? arr[i] : 0; 
     }
-    if(dp.count(i) && dp[i].count(j) && dp[i][j].count(turn)) return dp[i][j][turn];
+    if(dp[i][j][turn] != -1) return dp[i][j][turn];
     if(turn == 0){
         return dp[i][j][turn] = max(arr[i] + solve(arr,i + 1,j,1 - turn),arr[j] + solve(arr,i,j - 1,1 - turn));
     }
@@ -25,7 +26,7 @@ int main() {
     int n;
     cin >> n;
     vector<ll> arr(n);
-    dp.clear();
+    memset(dp,-1,sizeof(dp));
     for(int i = 0;i < n;i++){
         cin >> arr[i];
     }

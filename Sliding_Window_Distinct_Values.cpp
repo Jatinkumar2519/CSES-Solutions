@@ -5,23 +5,25 @@ const int MOD = 1e9 + 7;
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(0);
-    int n;
-    cin >> n;
+    int n,k;
+    cin >> n >> k;
 
     vector<int> arr(n);
     for(int i = 0;i < n;i++){
         cin >> arr[i];
     }
 
-    unordered_map<int,int> map;
-    for(int i = 0;i < n;i++){
+    map<int,int> map;
+    for(int i = 0;i < k;i++){
         map[arr[i]]++;
     }
-
-    ll res = 1;
-    for(auto& [_,cnt] : map){
-        res = (res * (cnt + 1)) % MOD;
+    cout<< map.size() << ' ';
+    for(int i = k;i < n;i++){
+        if(--map[arr[i - k]] == 0){
+            map.erase(arr[i - k]);
+        }
+        map[arr[i]]++;
+        cout<< map.size() << ' ';
     }
-    cout<< res - 1;
     return 0;
 }

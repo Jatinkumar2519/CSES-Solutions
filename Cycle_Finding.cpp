@@ -3,81 +3,60 @@
 using namespace std;
 
 int main() {
-    ios::sync_with_stdio(false); cin.tie(0);
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
     int n, m;
     cin >> n >> m;
 
-    vector<vector<pair<ll, ll>>> graph(n + 1);
+    vector<array<ll,3>> edges;
     for (int i = 0; i < m; i++) {
         ll a, b, c;
         cin >> a >> b >> c;
-        graph[a].push_back({b, c});
+        edges.push_back({a, b, c});
     }
-    priority_queue<pair<ll, ll>, vector<pair<ll, ll>>, greater<>> pq;
-    vector<ll> dp(n + 1, LLONG_MAX);
+
+    vector<ll> dp(n + 1, 0);
     vector<int> parent(n + 1, -1);
-    vector<ll> visit(n + 1, 0);
-    bool flag = false;
+
     int start = -1;
 
-    pq.push({0, 1});
-    dp[1] = 0;
-
-    while (!pq.empty()) {
-        auto p = pq.top(); pq.pop();
-        ll cost = p.first;
-        ll node = p.second;
-
-        if (++visit[node] >= n) {
-            start = node;
-            flag = true;
-            break;
-        }
-
-        if (dp[node] < cost) continue;
-
-        for (auto &temp : graph[node]) {
-            if (dp[temp.first] > cost + temp.second) {
-                parent[temp.first] = node;
-                dp[temp.first] = cost + temp.second;
-                pq.push({dp[temp.first], temp.first});
+    for (int i = 0; i < n; i++) {
+        for (auto &e : edges) {
+            int u = e[0], v = e[1];
+            ll d = e[2];
+            if (dp[v] > dp[u] + d) {
+                dp[v] = dp[u] + d;
+                parent[v] = u;
+                if (i == n - 1) {
+                    start = v;
+                }
             }
         }
     }
 
-    if (flag) {
-        cout << "YES\n";
-        vector<int> path;
-        int end = start;
-        path.push_back(end);
-        start = parent[end];
-
-        unordered_set<int> visited;
-        visited.insert(end);
-
-        while (start != -1 && visited.find(start) == visited.end()) {
-            path.push_back(start);
-            visited.insert(start);
-            start = parent[start];
-        }
-
-        if (start == -1) {
-            cout << "NO\n"; // fallback if no cycle traced properly
-            return 0;
-        }
-
-        path.push_back(start);
-        reverse(path.begin(), path.end());
-
-        auto it = find(path.begin(), path.end(), start);
-        path = vector<int>(it, path.end());
-
-        for (int i : path) {
-            cout << i << ' ';
-        }
-    } else {
-        cout << "NO";
+    if (start == -1) {
+        cout << "NO\n";
+        return 0;
     }
+
+    int x = start;
+    for (int i = 0; i < n; i++) {
+        x = parent[x];
+    }
+
+    vector<int> cycle;
+    int cur = x;
+    do {
+        cycle.push_back(cur);
+        cur = parent[cur];
+    } while (cur != x);
+    cycle.push_back(x);
+    reverse(cycle.begin(), cycle.end());
+
+    cout << "YES\n";
+    for (int v : cycle) cout << v << " ";
+    cout << "\n";
 
     return 0;
 }
