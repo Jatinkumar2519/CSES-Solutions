@@ -1,0 +1,87 @@
+#include <bits/stdc++.h> 
+using namespace std;
+
+struct Node {
+	string val;
+	int num;
+	Node* left;
+	Node* right;
+	Node(string val, int num) {
+		this->val = val;
+		this->num = num;
+		left = right = nullptr;
+	}
+};
+
+struct Compare {
+	bool operator()(Node* n1, Node* n2) {
+		return n1->num > n2->num; // Min-heap
+	}
+};
+
+unordered_map<string, char> keyToChar;
+unordered_map<char, string> charToKey;
+
+void getCodes(Node* root, string curr) {
+	if (!root) return;
+	if (root->val != "^_^") {
+		keyToChar[curr] = root->val[0]; 
+		charToKey[root->val[0]] = curr;
+	}
+	getCodes(root->left, curr + '0');
+	getCodes(root->right, curr + '1');
+}
+
+string encode(string secretInformation) {
+	unordered_map<char, int> freq;
+	for (char& ch : secretInformation) {
+		freq[ch]++;
+	}
+
+	priority_queue<Node*, vector<Node*>, Compare> pq;
+	for (auto& [ch, cnt] : freq) {
+		pq.push(new Node(string(1, ch), cnt));
+	}
+
+	while (pq.size() > 1) {
+		Node* left = pq.top(); pq.pop();
+		Node* right = pq.top(); pq.pop();
+		Node* node = new Node("^_^", left->num + right->num);
+		node->left = left;
+		node->right = right;
+		pq.push(node);
+	}
+
+	if (pq.empty()) return "";
+	getCodes(pq.top(), "");
+
+	string key = "";
+	for (char& ch : secretInformation) {
+		key += charToKey[ch] + '/';
+	}
+	return key;
+}
+
+string decode(string encodedInformation) {
+	int i = 0;
+	string res;
+	int n = encodedInformation.length();
+	while (i < n) {
+		string str = "";
+		while (i < n && encodedInformation[i] != '/') {
+			str.push_back(encodedInformation[i++]);
+		}
+		res.push_back(keyToChar[str]);
+		i++;
+	}
+	return res;
+}
+
+int main() {
+	for(auto str : {"I love coding ninja","I am Iron Man 3000","We say : yes","You are @awesome no. 1"}){
+    	string enc = encode(str);
+    	cout<< "__________________" << endl;
+    	cout << "Encoded: " << enc << endl;
+    	cout << "Decoded: " << decode(enc) << endl;
+	}
+}
